@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Icon Picker\n\nCalled by the Concrete package **icon_picker** (Task \"Pick Icons\").\n\n**Setup** (also on Dashboard > Pages & Themes > Icon Picker):\n1. **Fetch Icons**: create an *OAuth2 API* credential\n   - Grant Type: Client Credentials\n   - Access Token URL: `__SITE_URL__/oauth/2.0/token`\n   - Client ID / Secret: from Dashboard > System > API > Integrations\n   - Scope: `__SCOPE__`\n   - Authentication: Body\n2. **Anthropic Chat Model**: add your model credential. Change the model here at any time.\n3. **Webhook**: create a *Header Auth* credential, name `X-Icon-Picker-Secret`, value = the secret from the dashboard.\n4. Activate, copy the **Production URL** of the Webhook into the dashboard.\n\nTip: add `?all=1` to the Fetch Icons URL to let the model choose from every icon of the theme.",
-        "height": 520,
+        "content": "## Icon Picker\n\nCalled by the Concrete package **icon_picker** (Task \"Pick Icons\").\n\n**Setup** (also on Dashboard > Pages & Themes > Icon Picker):\n1. **Anthropic Chat Model**: add your model credential. Change the model here at any time.\n2. **Webhook**: create a *Header Auth* credential, name `X-Icon-Picker-Secret`, value = the secret from the dashboard.\n3. Activate, copy the **Production URL** of the Webhook into the dashboard.\n\n**Fetch Icons** reads the icons the model may choose from: `__ICONS_URL__`, a static file the site writes (the theme's curated icons, or Font Awesome). No credential needed.",
+        "height": 420,
         "width": 460
       },
       "id": "b2a0d1e0-0000-4c1a-9f00-000000000000",
@@ -36,9 +36,7 @@
     },
     {
       "parameters": {
-        "url": "__SITE_URL__/ccm/api/1.0/icons",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "oAuth2Api",
+        "url": "__ICONS_URL__",
         "options": {}
       },
       "id": "b2a0d1e0-0002-4c1a-9f00-000000000002",
@@ -52,7 +50,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Label + context from the site, icons from the theme's REST endpoint\nconst body = $('Webhook').first().json.body ?? {};\nconst icons = ($json.data ?? []).map(i => ({ name: String(i.name), description: String(i.description ?? '') }));\n\nreturn [{\n  json: {\n    text: String(body.text ?? '').trim(),\n    context: String(body.context ?? '').trim(),\n    icons,\n  },\n}];"
+        "jsCode": "// Label + context from the site, icons from its iconset.json ({\"name\": \"description\", …})\nconst body = $('Webhook').first().json.body ?? {};\nconst icons = Object.entries($json ?? {}).map(([name, description]) => ({ name, description: String(description ?? '') }));\n\nreturn [{\n  json: {\n    text: String(body.text ?? '').trim(),\n    context: String(body.context ?? '').trim(),\n    icons,\n  },\n}];"
       },
       "id": "b2a0d1e0-0003-4c1a-9f00-000000000003",
       "name": "Prepare",

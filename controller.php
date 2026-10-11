@@ -19,7 +19,7 @@ class Controller extends Package implements ProviderAggregateInterface
     protected $pkgHandle = 'icon_picker';
     protected $appVersionRequired = '9.0.0';
     protected $phpVersionRequired = '8.0';
-    protected $pkgVersion = '0.1.0';
+    protected $pkgVersion = '0.1.1';
     protected $pkgAutoloaderRegistries = [
         'src' => 'IconPicker',
     ];

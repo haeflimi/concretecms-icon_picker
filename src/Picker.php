@@ -12,7 +12,7 @@ use RuntimeException;
 /**
  * Icons for texts (folder names, titles, …). pick() only reads what is stored: an unknown text is queued as pending
  * and the caller's fallback shows. The "Pick icons" task (pickPending) asks n8n for the pending texts; every icon is
- * checked against the theme's IconSet, so only icons the theme supports are ever returned. One row per text: the
+ * checked against the IconSet (the theme's, else Font Awesome), so only icons it supports are ever returned. One row per text: the
  * same text gets the same icon everywhere, the context is only a hint for the pick.
  */
 class Picker
@@ -34,9 +34,12 @@ class Picker
         $this->db = $db;
     }
 
-    public function getIconSet(): ?IconSet
+    /**
+     * The theme's icons, else Font Awesome.
+     */
+    public function getIconSet(): IconSet
     {
-        return $this->app->bound(IconSet::class) ? $this->app->make(IconSet::class) : null;
+        return $this->app->make($this->app->bound(IconSet::class) ? IconSet::class : FontAwesomeIconSet::class);
     }
 
     /**
@@ -46,7 +49,7 @@ class Picker
     {
         $set = $this->getIconSet();
         $key = static::normalize($text);
-        if ($set === null || $key === '') {
+        if ($key === '') {
             return $fallback;
         }
         if ($this->rows === null) {
@@ -80,20 +83,19 @@ class Picker
      *
      * @param callable(string): void $log
      *
-     * @throws RuntimeException when n8n isn't set up
+     * @throws RuntimeException when n8n isn't set up or iconset.json can't be written
      *
      * @return array{picked: int, none: int, failed: int}
      */
     public function pickPending(callable $log): array
     {
         $client = $this->app->make(N8nClient::class);
-        $set = $this->getIconSet();
-        if ($set === null) {
-            throw new RuntimeException(t('The active theme provides no icons for the icon picker.'));
-        }
         if (!$client->isEnabled()) {
             throw new RuntimeException(t('The icon picker is switched off or has no n8n webhook URL (Dashboard > Pages & Themes > Icon Picker).'));
         }
+        $set = $this->getIconSet();
+        // the list n8n reads, up to date before it is asked
+        $this->app->make(IconSetFile::class)->write($set);
         $counts = ['picked' => 0, 'none' => 0, 'failed' => 0];
         $pending = $this->db->fetchAllAssociative('SELECT id, label, context FROM ' . self::TABLE . ' WHERE status = ? ORDER BY id', [Guess::STATUS_PENDING]);
         foreach ($pending as $row) {
@@ -116,7 +118,7 @@ class Picker
                 'updatedAt' => (new DateTime())->format('Y-m-d H:i:s'),
             ], ['id' => $row['id'], 'status' => Guess::STATUS_PENDING]);
             ++$counts[$valid ? 'picked' : 'none'];
-            $log($valid ? t('%s → %s', $row['label'], $answer['icon']) : t('%s: no icon of the theme (%s)', $row['label'], $answer['icon'] ?? '-'));
+            $log($valid ? t('%s → %s', $row['label'], $answer['icon']) : t('%s: not an icon of the set (%s)', $row['label'], $answer['icon'] ?? '-'));
         }
         if ($counts['picked'] > 0) {
             $this->flushPageCache();

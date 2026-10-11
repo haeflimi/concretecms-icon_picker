@@ -8,8 +8,8 @@ use GuzzleHttp\Exception\ClientException;
 use RuntimeException;
 
 /**
- * Asks the n8n workflow (n8n/icon-picker.n8n.json) for the icon of a text. The workflow reads the theme's icons from
- * GET /ccm/api/1.0/icons and lets the model choose; model and prompt live in n8n.
+ * Asks the n8n workflow (n8n/icon-picker.n8n.json) for the icon of a text. The workflow reads the icons from the
+ * site's iconset.json (IconSetFile) and lets the model choose; model and prompt live in n8n.
  */
 class N8nClient
 {

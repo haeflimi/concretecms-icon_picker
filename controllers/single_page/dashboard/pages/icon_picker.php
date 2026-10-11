@@ -7,6 +7,8 @@ use Concrete\Core\Entity\Automation\Task;
 use Concrete\Core\Page\Controller\DashboardPageController;
 use DateTime;
 use IconPicker\Entity\Guess;
+use IconPicker\FontAwesomeIconSet;
+use IconPicker\IconSetFile;
 use IconPicker\N8nClient;
 use IconPicker\Picker;
 use RuntimeException;
@@ -22,9 +24,8 @@ class IconPicker extends DashboardPageController
 {
     const TOKEN = 'icon_picker';
 
-    /** Placeholders in n8n/icon-picker.n8n.json, filled in by download_workflow() */
-    const PLACEHOLDER_URL = '__SITE_URL__';
-    const PLACEHOLDER_SCOPE = '__SCOPE__';
+    /** Placeholder in n8n/icon-picker.n8n.json, filled in by download_workflow() */
+    const PLACEHOLDER_ICONS_URL = '__ICONS_URL__';
 
     public function view()
     {
@@ -33,17 +34,22 @@ class IconPicker extends DashboardPageController
         $config = $this->app->make('config');
         $set = $picker->getIconSet();
         $db = $this->app->make(Connection::class);
+        $file = $this->app->make(IconSetFile::class);
+        try {
+            $file->write($set);
+        } catch (RuntimeException $e) {
+            $this->error->add($e->getMessage());
+        }
 
         $this->set('set', $set);
+        $this->set('defaultSet', $set instanceof FontAwesomeIconSet);
+        $this->set('curatedCount', count($set->curated()));
+        $this->set('iconsUrl', $file->url());
         $this->set('rows', $db->fetchAllAssociative('SELECT * FROM ' . Picker::TABLE . ' ORDER BY status = ? DESC, label', [Guess::STATUS_PENDING]));
-        $this->set('names', $set ? array_merge(array_keys($set->curated()), array_diff($set->names(), array_keys($set->curated()))) : []);
+        $this->set('names', array_merge(array_keys($set->curated()), array_diff($set->names(), array_keys($set->curated()))));
         $this->set('enabled', (bool) $config->get('icon_picker::n8n.enabled'));
         $this->set('url', $client->getUrl());
         $this->set('secret', $client->getSecret());
-        $this->set('siteUrl', $this->getSiteUrl());
-        $this->set('scope', $set ? $set->apiScope() : '');
-        $this->set('apiEnabled', (bool) $config->get('concrete.api.enabled'));
-        $this->set('scopeExists', $set && (bool) $db->fetchOne('SELECT 1 FROM OAuth2Scope WHERE identifier = ?', [$set->apiScope()]));
         $task = $this->entityManager->getRepository(Task::class)->findOneBy(['handle' => 'pick_icons']);
         $this->set('lastRun', $task && $task->getDateLastStarted() ? (int) $task->getDateLastStarted() : null);
         $this->set('tokenName', self::TOKEN);
@@ -79,8 +85,8 @@ class IconPicker extends DashboardPageController
         }
         $icon = trim((string) $this->request->request->get('icon'));
         $set = $this->app->make(Picker::class)->getIconSet();
-        if (!$set || !$set->has($icon)) {
-            $this->error->add(t('"%s" is not an icon of the theme.', $icon));
+        if (!$set->has($icon)) {
+            $this->error->add(t('"%s" is not an icon of the set.', $icon));
 
             return $this->view();
         }
@@ -153,7 +159,7 @@ class IconPicker extends DashboardPageController
         try {
             $answer = $client->ask($text, trim((string) $this->request->request->get('context')));
             $set = $this->app->make(Picker::class)->getIconSet();
-            $this->set('testResult', $answer + ['text' => $text, 'valid' => $answer['icon'] !== null && $set && $set->has($answer['icon'])]);
+            $this->set('testResult', $answer + ['text' => $text, 'valid' => $answer['icon'] !== null && $set->has($answer['icon'])]);
         } catch (RuntimeException $e) {
             $this->error->add($e->getMessage());
         }
@@ -162,17 +168,12 @@ class IconPicker extends DashboardPageController
     }
 
     /**
-     * The shipped workflow with this site's URL and the theme's scope filled in.
+     * The shipped workflow with the URL of this site's iconset.json filled in.
      */
     public function download_workflow()
     {
-        $set = $this->app->make(Picker::class)->getIconSet();
         $json = (string) file_get_contents(dirname(__DIR__, 4) . '/n8n/icon-picker.n8n.json');
-        $json = str_replace(
-            [self::PLACEHOLDER_URL, self::PLACEHOLDER_SCOPE],
-            [$this->getSiteUrl(), $set ? $set->apiScope() : self::PLACEHOLDER_SCOPE],
-            $json
-        );
+        $json = str_replace(self::PLACEHOLDER_ICONS_URL, $this->app->make(IconSetFile::class)->url(), $json);
 
         return new Response($json, 200, [
             'Content-Type' => 'application/json',
@@ -196,10 +197,5 @@ class IconPicker extends DashboardPageController
         $data['updatedAt'] = (new DateTime())->format('Y-m-d H:i:s');
         $this->app->make(Connection::class)->update(Picker::TABLE, $data, ['id' => (int) $id]);
         $this->app->make(Picker::class)->flushPageCache();
-    }
-
-    protected function getSiteUrl(): string
-    {
-        return rtrim((string) $this->app->make('url/canonical'), '/');
     }
 }

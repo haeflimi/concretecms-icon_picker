@@ -5,16 +5,15 @@ defined('C5_EXECUTE') or die('Access Denied.');
 /**
  * @var Concrete\Core\Page\View\PageView $view
  * @var Concrete\Core\Validation\CSRF\Token $token
- * @var IconPicker\IconSet|null $set
+ * @var IconPicker\IconSet $set
+ * @var bool $defaultSet the theme binds no IconSet, Font Awesome is used
+ * @var int $curatedCount
+ * @var string $iconsUrl iconset.json
  * @var array<int, array<string, mixed>> $rows IconPickerGuesses, pending first
  * @var string[] $names icon names, curated first
  * @var bool $enabled
  * @var string $url
  * @var string $secret
- * @var string $siteUrl
- * @var string $scope
- * @var bool $apiEnabled
- * @var bool $scopeExists
  * @var int|null $lastRun
  * @var string $tokenName
  * @var string|null $runResult
@@ -38,19 +37,15 @@ $check = static fn (bool $ok): string => $ok
 ?>
 <div id="ip">
     <p class="text-muted" style="max-width: 60rem">
-        <?= t('The theme shows icons for texts like the folder names of the club documents. New texts are collected here and the "Pick Icons" task asks an AI workflow in n8n for a fitting icon. The workflow only gets the icons of the theme, and every answer is checked again here. Until a text has an icon, the theme shows its own fallback.') ?>
+        <?= t('The theme shows icons for texts like the folder names of the club documents. New texts are collected here and the "Pick Icons" task asks an AI workflow in n8n for a fitting icon. The workflow only gets the icons of the set, and every answer is checked again here. Until a text has an icon, the theme shows its own fallback.') ?>
     </p>
-
-    <?php if ($set === null) { ?>
-        <div class="alert alert-warning"><?= t('The active theme provides no icons for the icon picker, so nothing is picked and the fallbacks show.') ?></div>
-    <?php } ?>
 
     <?php if (isset($testResult)) { ?>
         <div class="alert <?= $testResult['valid'] ? 'alert-success' : 'alert-warning' ?> d-flex align-items-center gap-3">
-            <?php if ($testResult['valid']) { ?><span class="ip-preview"><?= $set->svg($testResult['icon'], 24) ?></span><?php } ?>
+            <?php if ($testResult['valid']) { ?><span class="ip-preview"><?= $set->html($testResult['icon'], 24) ?></span><?php } ?>
             <div>
                 <strong><?= h($testResult['text']) ?> → <?= h($testResult['icon'] ?? '–') ?></strong>
-                <?php if (!$testResult['valid']) { ?> (<?= t('not an icon of the theme') ?>)<?php } ?>
+                <?php if (!$testResult['valid']) { ?> (<?= t('not an icon of the set') ?>)<?php } ?>
                 <?php if ($testResult['reason'] !== '') { ?><br><span class="small"><?= h($testResult['reason']) ?></span><?php } ?>
                 <br><span class="small text-muted"><?= t('Test only, nothing was stored.') ?></span>
             </div>
@@ -95,8 +90,7 @@ $check = static fn (bool $ok): string => $ok
                 <div class="card-body">
                     <h3 class="h5"><?= t('Status') ?></h3>
                     <ul class="list-unstyled mb-3">
-                        <li><?= $check($apiEnabled) ?> <?= $apiEnabled ? t('REST API is enabled') : t('REST API is disabled') ?></li>
-                        <li><?= $check($scopeExists) ?> <?= $scopeExists ? t('Scope %s exists', '<code>' . h($scope) . '</code>') : t('The theme\'s API scope is missing') ?></li>
+                        <li><i class="fas fa-icons text-muted"></i> <?= $defaultSet ? t('Icon set: Font Awesome (default, the theme has no own set)') : t('Icon set: the theme\'s own') ?> – <a href="<?= h($iconsUrl) ?>" target="_blank"><?= t2('%s icon in iconset.json', '%s icons in iconset.json', $curatedCount) ?></a></li>
                         <li><?= $check($url !== '' && $enabled) ?> <?= $url === '' ? t('No webhook URL') : ($enabled ? t('Picking is on') : t('Picking is off')) ?></li>
                         <li><i class="fas fa-clock text-muted"></i> <?= t('Last task run: %s', $lastRun ? $date->formatDateTime($lastRun) : t('never')) ?></li>
                         <li><i class="fas fa-hourglass-half text-muted"></i> <?= t2('%s text pending', '%s texts pending', $pending) ?></li>
@@ -125,29 +119,16 @@ $check = static fn (bool $ok): string => $ok
                     <ol class="ip-steps">
                         <li>
                             <strong><?= t('Download the workflow') ?></strong> –
-                            <?= t('this site\'s address and the API scope are already filled in.') ?><br>
+                            <?= t('the address of this site\'s icon list is already filled in.') ?><br>
                             <a class="btn btn-sm btn-outline-primary mt-2" href="<?= h($view->action('download_workflow')) ?>"><i class="fas fa-download"></i> icon-picker.n8n.json</a>
                         </li>
                         <li><strong><?= t('Import it in n8n') ?></strong>: <?= t('Workflows → Import from File.') ?></li>
-                        <li>
-                            <strong><?= t('Create an API integration') ?></strong>
-                            <?= t('on %s: grant type Client Credentials, custom scopes with only %s.', '<a href="' . h(URL::to('/dashboard/system/api/integrations')) . '">' . t('Dashboard › System › API › Integrations') . '</a>', '<code>' . h($scope ?: '–') . '</code>') ?>
-                            <?php if (!$apiEnabled) { ?><br><span class="text-warning"><?= t('Enable the REST API first under %s.', '<a href="' . h(URL::to('/dashboard/system/api/settings')) . '">' . t('Dashboard › System › API › Settings') . '</a>') ?></span><?php } ?>
-                            <br><?= t('In n8n, create an "OAuth2 API" credential for the node "Fetch Icons":') ?>
-                            <dl class="ip-values">
-                                <dt><?= t('Grant Type') ?></dt><dd>Client Credentials</dd>
-                                <dt><?= t('Access Token URL') ?></dt><dd><code><?= h($siteUrl . '/oauth/2.0/token') ?></code></dd>
-                                <dt><?= t('Client ID / Secret') ?></dt><dd><?= t('from the integration') ?></dd>
-                                <dt><?= t('Scope') ?></dt><dd><code><?= h($scope ?: '–') ?></code></dd>
-                                <dt><?= t('Authentication') ?></dt><dd>Body</dd>
-                            </dl>
-                        </li>
                         <li><strong><?= t('Choose the model') ?></strong>: <?= t('add your model credential (e.g. Anthropic) to the node "Anthropic Chat Model". The model and the prompt can be changed in n8n at any time, without touching the site. Any other chat model node works too.') ?></li>
                         <li><strong><?= t('Secure the webhook') ?></strong>: <?= t('create a "Header Auth" credential for the node "Webhook" with the name %s and the secret from the settings as value.', '<code>X-Icon-Picker-Secret</code>') ?></li>
                         <li><strong><?= t('Activate the workflow') ?></strong>, <?= t('copy the production URL of the node "Webhook" into the settings, switch picking on and save.') ?></li>
                         <li><strong><?= t('Test the connection') ?></strong> <?= t('with a sample text. The "Pick Icons" task then runs with the scheduler (Dashboard › System › Automation); "Pick pending icons now" runs it right away.') ?></li>
                     </ol>
-                    <p class="small text-muted mb-0"><?= t('The workflow gets the theme\'s curated icons from %s. Add %s to the URL in "Fetch Icons" to let it choose from every icon of the theme.', '<code>GET /ccm/api/1.0/icons</code>', '<code>?all=1</code>') ?></p>
+                    <p class="small text-muted mb-0"><?= t('The node "Fetch Icons" reads the icons the model may choose from %s, a file this page and the task keep up to date (no credential needed; n8n must be able to reach this site).', '<code>' . h($iconsUrl) . '</code>') ?></p>
                 </div>
             </div>
         </div>
@@ -171,7 +152,7 @@ $check = static fn (bool $ok): string => $ok
                             <?= h($row['label']) ?>
                             <?php if ($row['context'] !== '') { ?><div class="small text-muted ip-context" title="<?= h($row['context']) ?>"><?= h($row['context']) ?></div><?php } ?>
                         </td>
-                        <td><?php if ($row['icon'] !== null && $set) { ?><span class="ip-preview" title="<?= h($row['icon']) ?>"><?= $set->svg($row['icon'], 22) ?></span><?php } ?></td>
+                        <td><?php if ($row['icon'] !== null) { ?><span class="ip-preview" title="<?= h($row['icon']) ?>"><?= $set->html($row['icon'], 22) ?></span><?php } ?></td>
                         <td>
                             <span class="badge text-bg-<?= $tone ?>"><?= h($statusLabel) ?></span>
                             <?php if ($row['icon'] !== null) { ?><div class="small"><code><?= h($row['icon']) ?></code></div><?php } ?>

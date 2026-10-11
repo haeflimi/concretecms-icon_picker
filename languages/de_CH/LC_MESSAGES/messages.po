@@ -13,8 +13,14 @@ msgstr "Icon-Auswahl"
 msgid "Picks theme icons for texts like folder names with an AI workflow in n8n."
 msgstr "Wählt Theme-Icons für Texte wie Ordnernamen mit einem KI-Workflow in n8n."
 
-msgid "The active theme provides no icons for the icon picker."
-msgstr "Das aktive Theme stellt der Icon-Auswahl keine Icons zur Verfügung."
+msgid "n8n answered with HTTP %s. Check the webhook URL and the secret."
+msgstr "n8n hat mit HTTP %s geantwortet. Prüfe die Webhook-URL und das Secret."
+
+msgid "n8n could not be reached: %s"
+msgstr "n8n ist nicht erreichbar: %s"
+
+msgid "n8n did not answer with JSON."
+msgstr "n8n hat nicht mit JSON geantwortet."
 
 msgid "The icon picker is switched off or has no n8n webhook URL (Dashboard > Pages & Themes > Icon Picker)."
 msgstr "Die Icon-Auswahl ist ausgeschaltet oder hat keine n8n-Webhook-URL (Dashboard > Seiten & Themes > Icon-Auswahl)."
@@ -25,29 +31,14 @@ msgstr "%s: %s"
 msgid "%s → %s"
 msgstr "%s → %s"
 
-msgid "%s: no icon of the theme (%s)"
-msgstr "%s: kein Icon des Themes (%s)"
+msgid "%s: not an icon of the set (%s)"
+msgstr "%s: kein Icon des Sets (%s)"
 
-msgid "n8n answered with HTTP %s. Check the webhook URL and the secret."
-msgstr "n8n hat mit HTTP %s geantwortet. Prüfe die Webhook-URL und das Secret."
-
-msgid "n8n could not be reached: %s"
-msgstr "n8n ist nicht erreichbar: %s"
-
-msgid "n8n did not answer with JSON."
-msgstr "n8n hat nicht mit JSON geantwortet."
+msgid "The icon list %s could not be written."
+msgstr "Die Icon-Liste %s konnte nicht geschrieben werden."
 
 msgid "Icons picked: %s, without a fitting icon: %s, failed (will retry): %s."
 msgstr "Icons gewählt: %s, ohne passendes Icon: %s, fehlgeschlagen (wird wiederholt): %s."
-
-msgid "Pick Icons"
-msgstr "Icons wählen"
-
-msgid "Asks the n8n workflow for the icons of new texts like folder names; only icons of the theme are stored."
-msgstr "Fragt den n8n-Workflow nach Icons für neue Texte wie Ordnernamen; gespeichert werden nur Icons des Themes."
-
-msgid "Pick Icons finished."
-msgstr "Icons wählen ist fertig."
 
 msgid "Pending"
 msgstr "Ausstehend"
@@ -61,14 +52,11 @@ msgstr "Von Hand"
 msgid "No fitting icon"
 msgstr "Kein passendes Icon"
 
-msgid "The theme shows icons for texts like the folder names of the club documents. New texts are collected here and the \"Pick Icons\" task asks an AI workflow in n8n for a fitting icon. The workflow only gets the icons of the theme, and every answer is checked again here. Until a text has an icon, the theme shows its own fallback."
-msgstr "Das Theme zeigt Icons für Texte wie die Ordnernamen der Vereinsdokumente. Neue Texte werden hier gesammelt, und die Aufgabe «Icons wählen» fragt einen KI-Workflow in n8n nach einem passenden Icon. Der Workflow bekommt nur die Icons des Themes, und jede Antwort wird hier nochmals geprüft. Bis ein Text ein Icon hat, zeigt das Theme sein eigenes Ersatz-Icon."
+msgid "The theme shows icons for texts like the folder names of the club documents. New texts are collected here and the \"Pick Icons\" task asks an AI workflow in n8n for a fitting icon. The workflow only gets the icons of the set, and every answer is checked again here. Until a text has an icon, the theme shows its own fallback."
+msgstr "Das Theme zeigt Icons für Texte wie die Ordnernamen der Vereinsdokumente. Neue Texte werden hier gesammelt, und die Aufgabe «Icons wählen» fragt einen KI-Workflow in n8n nach einem passenden Icon. Der Workflow bekommt nur die Icons des Sets, und jede Antwort wird hier nochmals geprüft. Solange ein Text kein Icon hat, zeigt das Theme sein eigenes Ersatz-Icon."
 
-msgid "The active theme provides no icons for the icon picker, so nothing is picked and the fallbacks show."
-msgstr "Das aktive Theme stellt der Icon-Auswahl keine Icons zur Verfügung. Es wird nichts gewählt, und die Ersatz-Icons erscheinen."
-
-msgid "not an icon of the theme"
-msgstr "kein Icon des Themes"
+msgid "not an icon of the set"
+msgstr "kein Icon des Sets"
 
 msgid "Test only, nothing was stored."
 msgstr "Nur ein Test, es wurde nichts gespeichert."
@@ -97,17 +85,16 @@ msgstr "Speichern"
 msgid "Status"
 msgstr "Status"
 
-msgid "REST API is enabled"
-msgstr "REST-API ist eingeschaltet"
+msgid "Icon set: Font Awesome (default, the theme has no own set)"
+msgstr "Icon-Set: Font Awesome (Standard, das Theme hat kein eigenes)"
 
-msgid "REST API is disabled"
-msgstr "REST-API ist ausgeschaltet"
+msgid "Icon set: the theme's own"
+msgstr "Icon-Set: das eigene des Themes"
 
-msgid "Scope %s exists"
-msgstr "Scope %s ist vorhanden"
-
-msgid "The theme's API scope is missing"
-msgstr "Der API-Scope des Themes fehlt"
+msgid "%s icon in iconset.json"
+msgid_plural "%s icons in iconset.json"
+msgstr[0] "%s Icon in iconset.json"
+msgstr[1] "%s Icons in iconset.json"
 
 msgid "No webhook URL"
 msgstr "Keine Webhook-URL"
@@ -147,50 +134,14 @@ msgstr "Einrichtung in n8n"
 msgid "Download the workflow"
 msgstr "Workflow herunterladen"
 
-msgid "this site's address and the API scope are already filled in."
-msgstr "Die Adresse dieser Website und der API-Scope sind schon eingetragen."
+msgid "the address of this site's icon list is already filled in."
+msgstr "Die Adresse der Icon-Liste dieser Website ist schon eingetragen."
 
 msgid "Import it in n8n"
 msgstr "In n8n importieren"
 
 msgid "Workflows → Import from File."
 msgstr "Workflows → Import from File."
-
-msgid "Create an API integration"
-msgstr "API-Integration anlegen"
-
-msgid "Dashboard › System › API › Integrations"
-msgstr "Dashboard › System › API › Integrationen"
-
-msgid "on %s: grant type Client Credentials, custom scopes with only %s."
-msgstr "unter %s: Grant Type Client Credentials, eigene Scopes mit nur %s."
-
-msgid "Dashboard › System › API › Settings"
-msgstr "Dashboard › System › API › Einstellungen"
-
-msgid "Enable the REST API first under %s."
-msgstr "Schalte zuerst die REST-API ein unter %s."
-
-msgid "In n8n, create an \"OAuth2 API\" credential for the node \"Fetch Icons\":"
-msgstr "Lege in n8n für den Node «Fetch Icons» ein Credential vom Typ «OAuth2 API» an:"
-
-msgid "Grant Type"
-msgstr "Grant Type"
-
-msgid "Access Token URL"
-msgstr "Access Token URL"
-
-msgid "Client ID / Secret"
-msgstr "Client ID / Secret"
-
-msgid "from the integration"
-msgstr "aus der Integration"
-
-msgid "Scope"
-msgstr "Scope"
-
-msgid "Authentication"
-msgstr "Authentication"
 
 msgid "Choose the model"
 msgstr "Modell wählen"
@@ -213,8 +164,8 @@ msgstr "Kopiere die Production-URL des Nodes «Webhook» in die Einstellungen, s
 msgid "with a sample text. The \"Pick Icons\" task then runs with the scheduler (Dashboard › System › Automation); \"Pick pending icons now\" runs it right away."
 msgstr "mit einem Beispieltext. Die Aufgabe «Icons wählen» läuft danach mit dem Scheduler (Dashboard › System › Automatisierung); «Ausstehende Icons jetzt wählen» startet sie sofort."
 
-msgid "The workflow gets the theme's curated icons from %s. Add %s to the URL in \"Fetch Icons\" to let it choose from every icon of the theme."
-msgstr "Der Workflow holt die ausgewählten Icons des Themes über %s. Hänge %s an die URL in «Fetch Icons», damit er aus allen Icons des Themes wählen kann."
+msgid "The node \"Fetch Icons\" reads the icons the model may choose from %s, a file this page and the task keep up to date (no credential needed; n8n must be able to reach this site)."
+msgstr "Der Node «Fetch Icons» liest die Icons, aus denen das Modell wählen darf, aus %s – einer Datei, die diese Seite und die Aufgabe aktuell halten (kein Credential nötig; n8n muss diese Website erreichen können)."
 
 msgid "Texts and their icons"
 msgstr "Texte und ihre Icons"
@@ -249,14 +200,23 @@ msgstr "Löschen"
 msgid "Icons set by hand are never changed by the task. The context is only a hint for the AI: one text gets the same icon everywhere."
 msgstr "Von Hand gesetzte Icons ändert die Aufgabe nie. Der Kontext ist nur ein Hinweis für die KI: Ein Text bekommt überall dasselbe Icon."
 
+msgid "Pick Icons"
+msgstr "Icons wählen"
+
+msgid "Asks the n8n workflow for the icons of new texts like folder names; only icons of the theme are stored."
+msgstr "Fragt den n8n-Workflow nach Icons für neue Texte wie Ordnernamen; gespeichert werden nur Icons des Themes."
+
+msgid "Pick Icons finished."
+msgstr "Icons wählen ist fertig."
+
 msgid "The webhook URL is not a valid URL."
 msgstr "Die Webhook-URL ist keine gültige URL."
 
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-msgid "\"%s\" is not an icon of the theme."
-msgstr "«%s» ist kein Icon des Themes."
+msgid "\"%s\" is not an icon of the set."
+msgstr "«%s» ist kein Icon des Sets."
 
 msgid "Icon saved."
 msgstr "Icon gespeichert."

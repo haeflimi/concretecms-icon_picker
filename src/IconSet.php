@@ -3,30 +3,25 @@
 namespace IconPicker;
 
 /**
- * The icons of the active theme. The theme package binds its implementation in its on_start (the picker can't know
- * which icons a theme supports); without a binding the picker returns the callers' fallbacks.
- *
- * The theme also serves its icons to the n8n workflow: GET /ccm/api/1.0/icons (?all=1 for every icon), answering
- * {"data": [{"name": "…", "description": "…"}, …]}, guarded by the OAuth2 scope apiScope().
+ * The icons a pick may use. A theme with its own icons binds its implementation in its on_start (the picker can't know
+ * which icons a theme supports); without a binding the picker uses FontAwesomeIconSet. The picker publishes curated()
+ * as iconset.json for the n8n workflow (IconSetFile), so a theme needs no file or endpoint of its own.
  */
 interface IconSet
 {
-    /** The icon exists in the theme and may be rendered */
+    /** The icon exists in the set and may be rendered */
     public function has(string $name): bool;
 
     /**
-     * @return string[] every icon name of the theme
+     * @return string[] every icon name of the set
      */
     public function names(): array;
 
     /**
-     * @return array<string, string> the theme's curated icons for automatic picks, name => what it stands for
+     * @return array<string, string> the icons an automatic pick may choose from, name => what it stands for (English)
      */
     public function curated(): array;
 
-    /** The OAuth2 scope of GET /ccm/api/1.0/icons */
-    public function apiScope(): string;
-
-    /** The icon as inline SVG for previews, '' for unknown names */
-    public function svg(string $name, int $size = 20): string;
+    /** The icon as HTML for previews (inline SVG, an icon font tag, …), '' for unknown names */
+    public function html(string $name, int $size = 20): string;
 }
